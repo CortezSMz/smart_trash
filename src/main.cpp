@@ -1,7 +1,10 @@
-#include "Static.h"
+#include "static/Cards.h"
+#include "static/Colors.h"
 #include "Util.h"
 
 void printDFPDetail(int type, int value);
+ColorDictionary getColor(char *name);
+RfidCardDictionary getCard(char *UID);
 
 // MFRC522
 #include <Wire.h>
@@ -21,6 +24,14 @@ String tagContent = "";
 #include <TFT_eSPI.h>
 
 TFT_eSPI tft = TFT_eSPI();
+
+// LCD
+#include <LiquidCrystal_I2C.h>
+
+#define LCD_I2C_SDA 25
+#define LCD_I2C_SCL 26
+
+LiquidCrystal_I2C lcd(0x27, 16, 2); // set the LCD address to 0x27 for a 16 chars and 2 line display
 
 // DFPlayer Mini
 #include "HardwareSerial.h"
@@ -50,6 +61,10 @@ void setup()
   tft.fillScreen(TFT_BLACK);
   tft.setTextWrap(true, true);
 
+  // LCD
+  lcd.init(LCD_I2C_SDA, LCD_I2C_SCL);
+  lcd.backlight();
+
   // DFPlayer Mini setup
   dfSD.begin(9600, SERIAL_8N1, RXD2, TXD2);
   Serial.println();
@@ -68,7 +83,7 @@ void setup()
 
   pinMode(dfBusyPin, INPUT);
   DFPlayer.setTimeOut(500);
-  DFPlayer.volume(15); // Volume value. From 0 to 30
+  DFPlayer.volume(30); // Volume value. From 0 to 30
   DFPlayer.EQ(0);      /*  0 = Normal, 1 = Pop, 2 = Rock, 3 = Jazz, 4 = Classic, 5 = Bass */
   DFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
 }
@@ -98,39 +113,40 @@ void loop()
   tagContent.toUpperCase();
   Serial.println(tagContent);
 
-  // Loop trought card info
-  for (int i = 0; i < (sizeof(cards) / sizeof(int)) - 1; i++)
+  // Get card info
+  RfidCardDictionary card = getCard((char *)tagContent.c_str());
+  ColorDictionary color = getColor(card.color);
+
+  // Write to TFT
+  tft.setCursor(0, 0);
+  tft.fillScreen(TFT_BLACK);
+  tft.setTextSize(1);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.println("TAG UID: ");
+  tft.println(tagContent);
+  tft.println("");
+  tft.setTextColor(color.code, TFT_BLACK);
+  tft.println(card.text);
+  tft.fillRectVGradient(0, 50, 128, 128, TFT_BLACK, color.code);
+
+  // Write to LCD
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(card.text);
+  lcd.setCursor(0, 1);
+  lcd.print(color.name);
+  lcd.print(" TRASH");
+
+  // Break if current index is higher than sound file count
+  if (card.songId > DFPlayer.readFileCounts())
   {
-    if (strcmp(cards[i].RFIDUID, tagContent.c_str()) == 0)
-    {
-      // Write UID to screen
-      tft.setCursor(0, 0);
-      tft.fillScreen(TFT_BLACK);
-      tft.setTextSize(1);
-      tft.setTextColor(TFT_WHITE, TFT_BLACK);
-      tft.println("TAG UID: ");
-      tft.println(tagContent);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.println("");
+    tft.println("No sound file");
 
-      // Write card info
-      tft.println("");
-      tft.setTextColor(cards[i].color, TFT_BLACK);
-      tft.println(cards[i].text);
-      tft.fillRectVGradient(0, 50, 128, 128, TFT_BLACK, cards[i].color);
-
-      // Break if current index is higher than sound file count
-      if ((i + 1) > DFPlayer.readFileCounts())
-      {
-        tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.println("");
-        tft.println("No sound file");
-
-        break;
-      }
-
-      // Play sound file
-      DFPlayer.play(cards[i].song);
-
-      break;
-    }
+    return;
   }
+
+  // Play sound file
+  DFPlayer.play(card.songId);
 }

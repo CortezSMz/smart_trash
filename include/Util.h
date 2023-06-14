@@ -57,3 +57,29 @@ void printDFPDetail(int type, int value)
         break;
     }
 }
+
+ColorDictionary getColor(char *name)
+{
+    for (int i = 0; i < (sizeof(colors) / sizeof(int)) - 1; i++)
+    {
+        if (strcmp(name, colors[i].name) == 0)
+        {
+            return colors[i];
+        }
+    }
+
+    return {(char *)"", -1};
+}
+
+RfidCardDictionary getCard(char *UID)
+{
+    for (int i = 0; i < (sizeof(cards) / sizeof(int)) - 1; i++)
+    {
+        if (strcmp(UID, cards[i].RFIDUID) == 0)
+        {
+            return cards[i];
+        }
+    }
+
+    return {(char *)"", -1, (char *)"", (char *)""};
+}

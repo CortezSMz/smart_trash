@@ -46,7 +46,7 @@ void setup()
 
   // TFT ST7735 setup
   tft.init();
-  tft.setRotation(0);
+  tft.setRotation(2);
   tft.fillScreen(TFT_BLACK);
   tft.setTextWrap(true, true);
 
@@ -68,7 +68,7 @@ void setup()
 
   pinMode(dfBusyPin, INPUT);
   DFPlayer.setTimeOut(500);
-  DFPlayer.volume(10); // Volume value. From 0 to 30
+  DFPlayer.volume(15); // Volume value. From 0 to 30
   DFPlayer.EQ(0);      /*  0 = Normal, 1 = Pop, 2 = Rock, 3 = Jazz, 4 = Classic, 5 = Bass */
   DFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
 }
@@ -81,7 +81,7 @@ void loop()
     printDFPDetail(DFPlayer.readType(), DFPlayer.read());
   }
 
-  // Reset the loop if no new card present on the sensor/reader. This saves the entire process when idle.
+  // Reset the loop if no new card present on the sensor/reader OR if DFPlayer is busy.
   if (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial() || !digitalRead(dfBusyPin))
   {
     delay(250);
@@ -103,14 +103,6 @@ void loop()
   {
     if (strcmp(cards[i].RFIDUID, tagContent.c_str()) == 0)
     {
-      // Break if file count is lower than current index
-      if ((i + 1) > DFPlayer.readFileCounts())
-      {
-        break;
-      }
-
-      DFPlayer.play(cards[i].song);
-
       // Write UID to screen
       tft.setCursor(0, 0);
       tft.fillScreen(TFT_BLACK);
@@ -124,6 +116,19 @@ void loop()
       tft.setTextColor(cards[i].color, TFT_BLACK);
       tft.println(cards[i].text);
       tft.fillRectVGradient(0, 50, 128, 128, TFT_BLACK, cards[i].color);
+
+      // Break if current index is higher than sound file count
+      if ((i + 1) > DFPlayer.readFileCounts())
+      {
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        tft.println("");
+        tft.println("No sound file");
+
+        break;
+      }
+
+      // Play sound file
+      DFPlayer.play(cards[i].song);
 
       break;
     }

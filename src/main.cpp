@@ -1,7 +1,7 @@
-#include "Static.cpp"
-#include "Util.cpp"
+#include "Static.h"
+#include "Util.h"
 
-void printDetail(int type, int value);
+void printDFPDetail(int type, int value);
 
 // MFRC522
 #include <Wire.h>
@@ -78,7 +78,7 @@ void loop()
   // Read DFPlayer status
   if (DFPlayer.available())
   {
-    printDetail(DFPlayer.readType(), DFPlayer.read());
+    printDFPDetail(DFPlayer.readType(), DFPlayer.read());
   }
 
   // Reset the loop if no new card present on the sensor/reader. This saves the entire process when idle.

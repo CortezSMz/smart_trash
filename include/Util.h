@@ -1,6 +1,6 @@
 #include "DFRobotDFPlayerMini.h"
 
-void printDetail(int type, int value)
+void printDFPDetail(int type, int value)
 {
     switch (type)
     {

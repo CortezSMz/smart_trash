@@ -20,7 +20,7 @@ const RfidCardDictionary cards[20]{
     {(char *)" 2A E5 6D CA", 11, (char *)"CAN OF JUICE", (char *)"YELLOW"},
     {(char *)" CE 20 23 D0", 12, (char *)"PICTURE FRAME", (char *)"YELLOW"},
     {(char *)" 79 7B 23 D0", 13, (char *)"GLASS", (char *)"GREEN"},
-    {(char *)" 79 9F 22 D0", 14, (char *)"... ", (char *)"GREEN"},
+    {(char *)" 79 9F 22 D0", 14, (char *)"...", (char *)"GREEN"},
     {(char *)" 05 CD 23 D0", 15, (char *)"...", (char *)"GREEN"},
     {(char *)" EB 6F 23 D0", 16, (char *)"...", (char *)"GREEN"},
     {(char *)" 8C 8F 22 D0", 17, (char *)"...", (char *)"BLUE"},

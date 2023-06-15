@@ -99,7 +99,6 @@ void loop()
   // Reset the loop if no new card present on the sensor/reader OR if DFPlayer is busy.
   if (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial() || !digitalRead(dfBusyPin))
   {
-    delay(250);
     return;
   }
 
@@ -124,7 +123,7 @@ void loop()
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.println("TAG UID: ");
   tft.println(tagContent);
-  tft.println("");
+  tft.println();
   tft.setTextColor(color.code, TFT_BLACK);
   tft.println(card.text);
   tft.fillRectVGradient(0, 50, 128, 128, TFT_BLACK, color.code);
@@ -137,16 +136,22 @@ void loop()
   lcd.print(color.name);
   lcd.print(" TRASH");
 
-  // Break if current index is higher than sound file count
-  if (card.songId > DFPlayer.readFileCounts())
+  // Check if song index is within sound file count and play
+  if (card.songId <= DFPlayer.readFileCounts())
   {
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.println("");
-    tft.println("No sound file");
+    DFPlayer.play(card.songId);
+
+    delay(500);
 
     return;
   }
 
-  // Play sound file
-  DFPlayer.play(card.songId);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.println();
+  tft.print("No sound for ID:");
+  tft.setTextSize(2);
+  tft.setTextColor(TFT_RED, TFT_BLACK);
+  tft.println(card.songId);
+
+  delay(500);
 }

@@ -28,8 +28,8 @@ TFT_eSPI tft = TFT_eSPI();
 // LCD
 #include <LiquidCrystal_I2C.h>
 
-#define LCD_I2C_SDA 01
-#define LCD_I2C_SCL 03
+#define LCD_I2C_SDA 25
+#define LCD_I2C_SCL 26
 
 LiquidCrystal_I2C lcd(0x27, 16, 2); // set the LCD address to 0x27 for a 16 chars and 2 line display
 

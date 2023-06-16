@@ -60,7 +60,7 @@ void printDFPDetail(int type, int value)
 
 ColorDictionary getColor(char *name)
 {
-    for (int i = 0; i < (sizeof(colors) / sizeof(int)) - 1; i++)
+    for (int i = 0; i < (sizeof(colors) / sizeof(colors[0])); i++)
     {
         if (strcmp(name, colors[i].name) == 0)
         {
@@ -73,7 +73,7 @@ ColorDictionary getColor(char *name)
 
 RfidCardDictionary getCard(char *UID)
 {
-    for (int i = 0; i < (sizeof(cards) / sizeof(int)) - 1; i++)
+    for (int i = 0; i < (sizeof(cards) / sizeof(cards[0])); i++)
     {
         if (strcmp(UID, cards[i].RFIDUID) == 0)
         {

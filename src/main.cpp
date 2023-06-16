@@ -138,7 +138,7 @@ void loop()
   lcd.print(" TRASH");
 
   // Check if song index is within sound file count and play
-  if (card.songId <= DFPlayer.readFileCounts())
+  if (card.songId > 0 && card.songId <= DFPlayer.readFileCounts())
   {
     DFPlayer.play(card.songId);
 

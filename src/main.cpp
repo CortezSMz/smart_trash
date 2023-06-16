@@ -22,7 +22,6 @@ String tagContent = "";
 // TFT ST7735
 #include <SPI.h>
 #include <TFT_eSPI.h>
-#include "User_Setup.h"
 
 TFT_eSPI tft = TFT_eSPI();
 

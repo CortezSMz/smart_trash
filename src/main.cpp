@@ -5,6 +5,7 @@
 // Images
 #include "images/trash_can.h"
 #include "images/recycle_arrow.h"
+#include "images/current_item.h"
 
 void printDFPDetail(int type, int value);
 ColorShade getColorShade(unsigned short color);
@@ -33,6 +34,7 @@ TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite bgSprite = TFT_eSprite(&tft);
 TFT_eSprite trashCanSprite = TFT_eSprite(&tft);
 TFT_eSprite recycleArrowSprite = TFT_eSprite(&tft);
+TFT_eSprite currentItemSprite = TFT_eSprite(&tft);
 
 // LCD
 #include <LiquidCrystal_I2C.h>
@@ -70,12 +72,14 @@ void setup()
   tft.fillScreen(TFT_BLACK);
   tft.setSwapBytes(true);
   bgSprite.createSprite(128, 128);
+  bgSprite.setSwapBytes(true);
 
   trashCanSprite.createSprite(88, 100);
-  trashCanSprite.setSwapBytes(true);
 
   recycleArrowSprite.createSprite(30, 28);
   recycleArrowSprite.setSwapBytes(true);
+
+  currentItemSprite.createSprite(30, 30);
 
   // LCD
   lcd.init(LCD_I2C_SDA, LCD_I2C_SCL);
@@ -145,6 +149,8 @@ void loop()
 
   setTrashCanColor(color.shades[0]);
 
+  setCurrentItem(card);
+
   updateLCD(card, color);
 
   if (card.songId >= 0 && card.songId <= DFPlayer.readFileCounts())
@@ -163,12 +169,13 @@ void updateTFT()
   trashCanSprite.pushImage(0, 0, 88, 100, trash_can);
   trashCanSprite.pushToSprite(&bgSprite, 20, 28, TFT_BLACK);
 
-  trashCanSprite.pushImage(0, 0, 88, 100, trash_can);
-  trashCanSprite.pushToSprite(&bgSprite, 20, 28, TFT_BLACK);
-
   bgSprite.setPivot(65, 98);
   recycleArrowSprite.pushImage(0, 0, 30, 28, recycle_arrow);
   recycleArrowSprite.pushRotated(&bgSprite, arrowAngle, TFT_BLACK);
+
+  currentItemSprite.pushImage(0, 0, 30, 30, current_item);
+  currentItemSprite.pushToSprite(&bgSprite, 5, 100, TFT_BLACK);
+
   bgSprite.pushSprite(0, 0);
 
   rotateRecycleArrow();

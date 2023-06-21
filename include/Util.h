@@ -58,20 +58,20 @@ void printDFPDetail(int type, int value)
     }
 }
 
-ColorDictionary getColor(char *name)
+ColorShade getColorShade(unsigned short color)
 {
     for (int i = 0; i < (sizeof(colors) / sizeof(colors[0])); i++)
     {
-        if (strcmp(name, colors[i].name) == 0)
+        if (color == colors[i].shades[0])
         {
             return colors[i];
         }
     }
 
-    return {(char *)"", -1};
+    return {new unsigned short[1]{0x0}, (char *)""};
 }
 
-RfidCardDictionary getCard(char *UID)
+RfidCard getCard(char *UID)
 {
     for (int i = 0; i < (sizeof(cards) / sizeof(cards[0])); i++)
     {
@@ -81,5 +81,5 @@ RfidCardDictionary getCard(char *UID)
         }
     }
 
-    return {(char *)"", -1, (char *)"", (char *)""};
+    return {(char *)"", -1, (char *)"", TFT_BLACK};
 }

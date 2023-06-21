@@ -2,9 +2,15 @@
 #include "static/Colors.h"
 #include "Util.h"
 
+// Images
+#include "images/trash_can.h"
+#include "images/recycle_arrow.h"
+
 void printDFPDetail(int type, int value);
-ColorDictionary getColor(char *name);
-RfidCardDictionary getCard(char *UID);
+ColorShade getColorShade(unsigned short color);
+RfidCard getCard(char *UID);
+void updateTFT();
+void updateLCD(RfidCard card, ColorShade color);
 
 // MFRC522
 #include <Wire.h>
@@ -24,6 +30,9 @@ String tagContent = "";
 #include <TFT_eSPI.h>
 
 TFT_eSPI tft = TFT_eSPI();
+TFT_eSprite bgSprite = TFT_eSprite(&tft);
+TFT_eSprite trashCanSprite = TFT_eSprite(&tft);
+TFT_eSprite recycleArrowSprite = TFT_eSprite(&tft);
 
 // LCD
 #include <LiquidCrystal_I2C.h>
@@ -59,7 +68,14 @@ void setup()
   tft.init();
   tft.setRotation(2);
   tft.fillScreen(TFT_BLACK);
-  tft.setTextWrap(true, true);
+  tft.setSwapBytes(true);
+  bgSprite.createSprite(128, 128);
+
+  trashCanSprite.createSprite(88, 100);
+  trashCanSprite.setSwapBytes(true);
+
+  recycleArrowSprite.createSprite(30, 28);
+  recycleArrowSprite.setSwapBytes(true);
 
   // LCD
   lcd.init(LCD_I2C_SDA, LCD_I2C_SCL);
@@ -80,6 +96,8 @@ void setup()
       ;
   }
   Serial.println(F("DFPlayer Mini online."));
+  Serial.print("Audio files:");
+  Serial.println(DFPlayer.readFileCounts());
 
   pinMode(dfBusyPin, INPUT);
   DFPlayer.setTimeOut(500);
@@ -96,6 +114,8 @@ void loop()
     printDFPDetail(DFPlayer.readType(), DFPlayer.read());
   }
 
+  updateTFT();
+
   // Reset the loop if no new card present on the sensor/reader OR if DFPlayer is busy.
   if (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial() || !digitalRead(dfBusyPin))
   {
@@ -110,48 +130,58 @@ void loop()
     tagContent.concat(String(mfrc522.uid.uidByte[i], HEX));
   }
   tagContent.toUpperCase();
-  Serial.println(tagContent);
 
   // Get card info
-  RfidCardDictionary card = getCard((char *)tagContent.c_str());
-  ColorDictionary color = getColor(card.color);
+  RfidCard card = getCard((char *)tagContent.c_str());
+  ColorShade color = getColorShade(card.color);
+  Serial.print("card: ");
+  Serial.print(card.color);
+  Serial.print(" - ");
+  Serial.print(card.RFIDUID);
+  Serial.print(" - ");
+  Serial.print(card.songId);
+  Serial.print(" - ");
+  Serial.println(card.text);
 
-  // Write to TFT
-  tft.setCursor(0, 0);
-  tft.fillScreen(TFT_BLACK);
-  tft.setTextSize(1);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.println("TAG UID: ");
-  tft.println(tagContent);
-  tft.println();
-  tft.setTextColor(color.code, TFT_BLACK);
-  tft.println(card.text);
-  tft.fillRectVGradient(0, 50, 128, 128, TFT_BLACK, color.code);
+  setTrashCanColor(color.shades[0]);
 
-  // Write to LCD
+  updateLCD(card, color);
+
+  if (card.songId >= 0 && card.songId <= DFPlayer.readFileCounts())
+  {
+
+    DFPlayer.play(card.songId);
+
+    delay(500);
+  }
+}
+
+void updateTFT()
+{
+  bgSprite.fillScreen(TFT_BLACK);
+
+  trashCanSprite.pushImage(0, 0, 88, 100, trash_can);
+  trashCanSprite.pushToSprite(&bgSprite, 20, 28, TFT_BLACK);
+
+  trashCanSprite.pushImage(0, 0, 88, 100, trash_can);
+  trashCanSprite.pushToSprite(&bgSprite, 20, 28, TFT_BLACK);
+
+  bgSprite.setPivot(65, 98);
+  recycleArrowSprite.pushImage(0, 0, 30, 28, recycle_arrow);
+  recycleArrowSprite.pushRotated(&bgSprite, arrowAngle, TFT_BLACK);
+  bgSprite.pushSprite(0, 0);
+
+  arrowAngle++;
+  if (arrowAngle >= 360)
+    arrowAngle = 0;
+}
+
+void updateLCD(RfidCard card, ColorShade color)
+{
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print(card.text);
   lcd.setCursor(0, 1);
   lcd.print(color.name);
   lcd.print(" TRASH");
-
-  // Check if song index is within sound file count and play
-  if (card.songId > 0 && card.songId <= DFPlayer.readFileCounts())
-  {
-    DFPlayer.play(card.songId);
-
-    delay(500);
-
-    return;
-  }
-
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.println();
-  tft.print("No sound for ID:");
-  tft.setTextSize(2);
-  tft.setTextColor(TFT_RED, TFT_BLACK);
-  tft.println(card.songId);
-
-  delay(500);
 }

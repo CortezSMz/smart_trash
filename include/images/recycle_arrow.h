@@ -6,6 +6,13 @@
 
 int arrowAngle = 0;
 
+void rotateRecycleArrow()
+{
+    arrowAngle++;
+    if (arrowAngle >= 360)
+        arrowAngle = 0;
+}
+
 const unsigned short recycle_arrow[0x348] = {
     0x0000,
     0x0000,

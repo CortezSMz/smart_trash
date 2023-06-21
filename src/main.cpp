@@ -171,9 +171,7 @@ void updateTFT()
   recycleArrowSprite.pushRotated(&bgSprite, arrowAngle, TFT_BLACK);
   bgSprite.pushSprite(0, 0);
 
-  arrowAngle++;
-  if (arrowAngle >= 360)
-    arrowAngle = 0;
+  rotateRecycleArrow();
 }
 
 void updateLCD(RfidCard card, ColorShade color)

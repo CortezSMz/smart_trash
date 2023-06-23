@@ -68,7 +68,7 @@ void setup()
 
   // TFT ST7735 setup
   tft.init();
-  tft.setRotation(2);
+  tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
   tft.setSwapBytes(true);
   bgSprite.createSprite(128, 128);
@@ -118,11 +118,13 @@ void loop()
     printDFPDetail(DFPlayer.readType(), DFPlayer.read());
   }
 
-  updateTFT();
+  if (!tagContent.isEmpty())
+    updateTFT();
 
   // Reset the loop if no new card present on the sensor/reader OR if DFPlayer is busy.
   if (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial() || !digitalRead(dfBusyPin))
   {
+    delay(50);
     return;
   }
 
@@ -179,6 +181,8 @@ void updateTFT()
   bgSprite.pushSprite(0, 0);
 
   rotateRecycleArrow();
+
+  bgSprite.flush();
 }
 
 void updateLCD(RfidCard card, ColorShade color)
